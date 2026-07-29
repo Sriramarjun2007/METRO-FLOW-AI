@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+const API = "https://metro-flow-ai.onrender.com";
 
 // Hook: maintains a live WebSocket connection to the backend orchestrator
 // and exposes the latest snapshot, agent results, alerts, and predictions.
@@ -17,11 +18,11 @@ export function useLiveStream() {
   const refresh = useCallback(async () => {
     try {
       const [snapR, agR, scR, alR, prR] = await Promise.all([
-        fetch("/api/snapshot").then((r) => r.json()),
-        fetch("/api/agents").then((r) => r.json()),
-        fetch("/api/scenarios").then((r) => r.json()),
-        fetch("/api/alerts").then((r) => r.json()),
-        fetch("/api/prediction").then((r) => r.json()),
+        fetch(`${API}/api/snapshot`).then((r) => r.json()),
+        fetch(`${API}/api/agents`).then((r) => r.json()),
+        fetch(`${API}/api/scenarios`).then((r) => r.json()),
+        fetch(`${API}/api/alerts`).then((r) => r.json()),
+        fetch(`${API}/api/prediction`).then((r) => r.json()),
       ]);
       if (snapR?.tick) setLast(snapR);
       if (Array.isArray(agR)) setAgents(agR);
@@ -43,8 +44,7 @@ export function useLiveStream() {
     timerId = setInterval(refresh, 1500);
 
     // try web socket
-    const proto = window.location.protocol === "https:" ? "wss" : "ws";
-    const wsUrl = `${proto}://${window.location.host}/ws`;
+    const wsUrl = "wss://metro-flow-ai.onrender.com/ws";
     let ws;
     try {
       ws = new WebSocket(wsUrl);
@@ -76,7 +76,7 @@ export function useLiveStream() {
   const setScenarioAndSend = useCallback(async (s) => {
     setScenario(s);
     try {
-      await fetch("/api/scenario", {
+      await fetch(`${API}/api/scenario`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenario: s }),

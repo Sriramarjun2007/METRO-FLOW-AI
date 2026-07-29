@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Section from "../components/ui/Section.jsx";
 import { GitBranch, Sigma, Workflow as WorkflowIcon, ChevronDown, ChevronRight, ShieldAlert } from "lucide-react";
 import clsx from "clsx";
+const API = "https://metro-flow-ai.onrender.com";
 
 const FALLBACK = [
   { id: "yolov8", name: "YOLOv8 Detection", category: "Perception" },
@@ -28,7 +29,7 @@ export default function AlgorithmsPage() {
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    fetch("/api/algorithms").then((r) => r.json()).then((data) => {
+    fetch(`${API}/api/algorithms`).then((r) => r.json()).then((data) => {
       if (Array.isArray(data) && data.length) {
         // expand fallback with details
         const map = {};

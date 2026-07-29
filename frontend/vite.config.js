@@ -8,11 +8,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "https://metro-flow-ai.onrender.com",
         changeOrigin: true,
       },
       "/ws": {
-        target: "ws://localhost:8000",
+        target: "wss://metro-flow-ai.onrender.com",
         ws: true,
         changeOrigin: true,
       },

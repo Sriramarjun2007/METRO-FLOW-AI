@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Mic, X, Send, Bot } from "lucide-react";
 import clsx from "clsx";
-
+const API = "https://metro-flow-ai.onrender.com";
 // Floating AI Assistant - text + (optional) voice input. Exposed as FAB.
 export default function VoiceFAB() {
   const [open, setOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function VoiceFAB() {
     setThread((t) => [...t, { role: "user", text: q }]);
     setInput("");
     try {
-      const res = await fetch("/api/voice", {
+      const res = await fetch(`${API}/api/voice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: q }),
