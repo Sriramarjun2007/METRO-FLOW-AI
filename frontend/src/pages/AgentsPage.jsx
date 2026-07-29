@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Users, ChevronRight, Cpu, BookOpen, ArrowRight, Network } from "lucide-react";
 import Section from "../components/ui/Section.jsx";
 import clsx from "clsx";
+import { Link } from "react-router-dom";
 
 const SDGS = {
   3: { label: "Good Health", color: "#4c9f38" },
@@ -22,18 +23,28 @@ export default function AgentsPage({ agents }) {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-semibold">20 AI Agents</h1>
-          <p className="text-[12px] text-slate-400">Each agent exposes Name, Purpose, Input, Algorithm, Processing Steps, Decision, Reason, Confidence, Execution Time, Communication Log, Output, Expected Impact, Status, Health.</p>
+          <p className="text-[12px] text-slate-400">
+            Each agent exposes Name, Purpose, Input, Algorithm, Processing Steps, Decision, Reason, Confidence, Execution Time, Communication Log, Output, Expected Impact, Status, Health.
+          </p>
         </div>
-        <a href="/agents/flow" className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 hover:border-neon-cyan/40 text-[12px] flex items-center gap-2">
+        <Link 
+          to="/agents/flow" 
+          className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 hover:border-neon-cyan/40 text-[12px] flex items-center gap-2"
+        >
           <Network className="h-3.5 w-3.5" />
           Open Communication Graph
           <ChevronRight className="h-3.5 w-3.5" />
-        </a>
+        </Link>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {(agents || []).map((a) => (
-          <AgentCard key={a.agent_id} agent={a} expanded={open === a.agent_id} onToggle={() => setOpen(open === a.agent_id ? null : a.agent_id)} />
+          <AgentCard 
+            key={a.agent_id} 
+            agent={a} 
+            expanded={open === a.agent_id} 
+            onToggle={() => setOpen(open === a.agent_id ? null : a.agent_id)} 
+          />
         ))}
       </div>
     </div>
@@ -46,7 +57,13 @@ function AgentCard({ agent, expanded, onToggle }) {
     error: "border-neon-rose/40 bg-neon-rose/10 text-neon-rose",
     idle: "border-white/10 bg-white/[0.04] text-slate-300",
   }[agent.status] || "border-white/10 bg-white/[0.04] text-slate-300";
+  
   const healthTone = agent.health === "degraded" ? "pill-rose" : "pill-emerald";
+
+  // Safe parsing for algorithm string
+  const formattedAlgorithm = agent.algorithm
+    ? agent.algorithm.split("+")[0].split("(")[0].trim()
+    : "N/A";
 
   return (
     <article className="glass overflow-hidden hover:border-white/20 transition">
@@ -62,10 +79,11 @@ function AgentCard({ agent, expanded, onToggle }) {
           <div className="text-[11px] text-slate-400 line-clamp-2 mt-1">{agent.purpose}</div>
         </div>
       </header>
+      
       <div className="px-4 pb-2">
         <div className="flex items-center gap-2 flex-wrap text-[10px]">
           <span className={clsx("pill", statTone)}>{agent.status}</span>
-          <span className="pill-cyan">{agent.algorithm.split("+")[0].split("(")[0].trim()}</span>
+          <span className="pill-cyan">{formattedAlgorithm}</span>
           {(agent.sdg_tags || []).map((s) => (
             <span key={s} style={{ borderColor: `${SDGS[s]?.color}66`, color: SDGS[s]?.color }} className="pill">
               SDG {s}
@@ -84,11 +102,13 @@ function AgentCard({ agent, expanded, onToggle }) {
           <div className={clsx(
             agent.confidence > 0.7 ? "text-neon-emerald" :
             agent.confidence > 0.4 ? "text-neon-amber" : "text-neon-rose"
-          )}>{(agent.confidence * 100).toFixed(0)}%</div>
+          )}>
+            {((agent.confidence || 0) * 100).toFixed(0)}%
+          </div>
         </div>
         <div>
           <div className="text-slate-400">Exec</div>
-          <div className="text-neon-cyan font-mono">{agent.execution_time_ms?.toFixed(1)}ms</div>
+          <div className="text-neon-cyan font-mono">{agent.execution_time_ms?.toFixed(1) ?? 0}ms</div>
         </div>
       </div>
 
