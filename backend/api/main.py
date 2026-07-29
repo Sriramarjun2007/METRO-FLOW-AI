@@ -25,19 +25,25 @@ import os
 import time
 from typing import Any
 
+import backend  # noqa: F401
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from ..services.orchestrator import Orchestrator
-from ..simulation.urbanverse import SCENARIO_CONFIG, Scenario
+from backend.services.orchestrator import Orchestrator
+from backend.simulation.urbanverse import SCENARIO_CONFIG, Scenario
 
 
 # ----------------------------------------------------------------------
 # App + orchestrator lifecycle
 # ----------------------------------------------------------------------
 app = FastAPI(title="METRO-FLOW AI", version="1.0.0")
+
+
+# Render / gunicorn entrypoint
+application = app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

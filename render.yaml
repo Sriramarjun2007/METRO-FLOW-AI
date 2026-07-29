@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: metro-flow-ai-backend
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r backend/requirements.render.txt"
+    startCommand: "cd backend && PYTHONPATH=.. python -m gunicorn api.main:application --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHONPATH
+        value: .
