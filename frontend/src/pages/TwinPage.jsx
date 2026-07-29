@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, Suspense } from "react";
+import React, { useRef, useMemo, useState, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Stars, Cloud } from "@react-three/drei";
 import * as THREE from "three";
@@ -110,18 +110,36 @@ function Scene({ last, dusk }) {
   const lanes = last?.lanes || {};
 
   const scale = SCALE;
+  const toFiniteNumber = (value, fallback = 0) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  };
+
+  const safeIntersections = useMemo(() => {
+    return Object.entries(intersections).reduce((acc, [iid, value]) => {
+      if (!value) return acc;
+      const x = toFiniteNumber(value.x, 0);
+      const y = toFiniteNumber(value.y, 0);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return acc;
+      acc[iid] = { ...value, x, y };
+      return acc;
+    }, {});
+  }, [intersections]);
+
   const interPos = useMemo(() => Object.fromEntries(
-    Object.entries(intersections).map(([iid, v]) => [iid, [v.x * scale, 0, v.y * scale]])
-  ), [intersections]);
+    Object.entries(safeIntersections).map(([iid, value]) => [iid, [value.x * scale, 0, value.y * scale]])
+  ), [safeIntersections, scale]);
 
   // layout buildings per cell (between intersections)
   const buildingSeeds = useMemo(() => {
     const out = [];
     Object.values(interPos).forEach(([x, _y, z]) => {
-      out.push([x + 6, z - 4, 4, 5]);
-      out.push([x - 6, z + 4, 3, 6]);
-      out.push([x + 4, z + 6, 5, 4]);
-      out.push([x - 4, z - 6, 3.5, 5]);
+      const safeX = toFiniteNumber(x, 0);
+      const safeZ = toFiniteNumber(z, 0);
+      out.push([safeX + 6, Math.max(3, Math.abs(safeZ) + 4), 4, 5]);
+      out.push([safeX - 6, Math.max(3, Math.abs(safeZ) + 5), 3, 6]);
+      out.push([safeX + 4, Math.max(3, Math.abs(safeZ) + 6), 5, 4]);
+      out.push([safeX - 4, Math.max(3, Math.abs(safeZ) + 7), 3.5, 5]);
     });
     return out;
   }, [interPos]);
@@ -148,9 +166,9 @@ function Scene({ last, dusk }) {
       ))}
 
       {/* roads between intersections */}
-      {Object.values(interPos).flatMap(([x, _y, z]) => [20, -20]).map((dx, i) => (
-        <Road key={`rdx-${i}`} orientation="x" position={[x / 2, 0, z + dx * 0.0]} />
-      ))}
+      {Object.entries(interPos).flatMap(([_, [x, _y, z]]) => [20, -20].map((dx, i) => (
+        <Road key={`rdx-${_}-${i}`} orientation="x" position={[x / 2, 0, z + dx * 0.0]} />
+      )))}
       {[0, 0].map((_, i) => null)}
       {/* horizontal roads */}
       {Array.from(new Set(Object.values(interPos).map((p) => p[2]))).flatMap((z) => (
@@ -166,9 +184,10 @@ function Scene({ last, dusk }) {
       ))}
 
       {/* Traffic lights at each intersection */}
-      {Object.entries(intersections).flatMap(([iid, inter]) => {
-        const [x, _y, z] = interPos[iid];
-        return Object.entries(inter.signals).map(([dir, s]) => {
+      {Object.entries(safeIntersections).flatMap(([iid, inter]) => {
+        const position = interPos[iid] || [0, 0, 0];
+        const [x, _y, z] = position;
+        return Object.entries(inter?.signals || {}).map(([dir, s]) => {
           const offs = {
             north: [0, 0, -1.1],
             south: [0, 0, 1.1],
@@ -176,34 +195,37 @@ function Scene({ last, dusk }) {
             west: [-1.1, 0, 0],
           }[dir] || [0, 0, 0];
           return (
-            <TrafficLight key={`tl-${iid}-${dir}`} position={[x + offs[0], 0, z + offs[2]]} color={s.color} />
+            <TrafficLight key={`tl-${iid}-${dir}`} position={[x + offs[0], 0, z + offs[2]]} color={s?.color || "green"} />
           );
         });
       })}
 
       {/* vehicles */}
       {Object.entries(lanes).flatMap(([iid, dirMap]) => {
-        const [xi, _yi, zi] = interPos[iid];
-        return Object.entries(dirMap).flatMap(([dir, lane]) => {
+        const position = interPos[iid] || [0, 0, 0];
+        const [xi, _yi, zi] = position;
+        return Object.entries(dirMap || {}).flatMap(([dir, lane]) => {
           const off = (v) => {
+            const pos = toFiniteNumber(v?.position, 0);
             switch (dir) {
-              case "north": return [xi - 0.4, 0.135, zi - v.position * scale];
-              case "south": return [xi + 0.4, 0.135, zi + v.position * scale];
-              case "east": return [xi + v.position * scale, 0.135, zi - 0.4];
-              case "west": return [xi - v.position * scale, 0.135, zi + 0.4];
+              case "north": return [xi - 0.4, 0.135, zi - pos * scale];
+              case "south": return [xi + 0.4, 0.135, zi + pos * scale];
+              case "east": return [xi + pos * scale, 0.135, zi - 0.4];
+              case "west": return [xi - pos * scale, 0.135, zi + 0.4];
               default: return [xi, 0, zi];
             }
           };
-          return (lane.vehicles || []).map((v) => {
+          return (lane?.vehicles || []).map((v) => {
             const [px, py, pz] = off(v);
-            const c = COLOR_FOR_TYPE[v.type] || "#ffffff";
+            const c = COLOR_FOR_TYPE[v?.type] || "#ffffff";
+            const length = Math.max(0.6, Math.min(2.6, toFiniteNumber(v?.length, 1) * SCALE));
             return (
               <Vehicle
-                key={`v-${iid}-${dir}-${v.id}`}
+                key={`v-${iid}-${dir}-${v?.id || Math.random()}`}
                 position={[px, py, pz]}
                 color={c}
-                length={Math.max(0.6, Math.min(2.6, v.length * SCALE))}
-                isEmergency={v.is_emergency}
+                length={length}
+                isEmergency={Boolean(v?.is_emergency)}
               />
             );
           });
