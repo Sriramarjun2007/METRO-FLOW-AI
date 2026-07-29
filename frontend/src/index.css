@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 800px at 15% -10%, rgba(34, 224, 255, 0.18), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(139, 92, 246, 0.16), transparent 60%),
+    linear-gradient(180deg, #050714 0%, #0a1024 100%);
+  background-attachment: fixed;
+}
+
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+@layer components {
+  .glass {
+    @apply rounded-2xl backdrop-blur-xl bg-white/[0.04] border border-white/10 shadow-glass;
+  }
+  .glass-strong {
+    @apply rounded-2xl backdrop-blur-xl bg-white/[0.06] border border-white/15 shadow-glass-strong;
+  }
+  .glass-soft {
+    @apply rounded-xl backdrop-blur-md bg-white/[0.025] border border-white/[0.07];
+  }
+  .grad-border {
+    background: linear-gradient(135deg, rgba(34,224,255,0.4), rgba(139,92,246,0.4)) border-box;
+    -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  }
+  .grad-text {
+    background: linear-gradient(120deg, #22e0ff, #8b5cf6);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
+  .pill {
+    @apply text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-white/10 text-slate-300 bg-white/[0.04];
+  }
+  .pill-cyan { @apply pill text-neon-cyan border-neon-cyan/40; }
+  .pill-violet { @apply pill text-neon-violet border-neon-violet/40; }
+  .pill-emerald { @apply pill text-neon-emerald border-neon-emerald/40; }
+  .pill-rose { @apply pill text-neon-rose border-neon-rose/40; }
+  .pill-amber { @apply pill text-neon-amber border-neon-amber/40; }
+
+  .kbd {
+    @apply font-mono text-[10px] px-1.5 py-0.5 rounded-md border border-white/10 bg-white/5;
+  }
+}
+
+.leaflet-container {
+  background: rgba(5, 12, 28, 0.7) !important;
+  font-family: Inter, system-ui, sans-serif;
+}
+.leaflet-tile { filter: hue-rotate(180deg) invert(0.95) brightness(0.85); }
+
+.react-flow__node { font-family: Inter, system-ui, sans-serif; }
+.react-flow__edge-path { stroke: rgba(255,255,255,0.2); }
+.react-flow__attribution { display: none; }
+
+.glow-cyan { box-shadow: 0 0 0 1px rgba(34,224,255,0.4), 0 0 24px rgba(34,224,255,0.4); }
+.glow-violet { box-shadow: 0 0 0 1px rgba(139,92,246,0.4), 0 0 24px rgba(139,92,246,0.4); }

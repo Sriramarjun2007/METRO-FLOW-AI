@@ -1,0 +1,756 @@
+You are a Senior Full Stack Engineer, AI Engineer, Simulation Engineer, Multi-Agent Systems Architect, and UI/UX Designer.
+
+Build a production-quality Smart City platform called
+
+METRO-FLOW AI
+Enterprise Urban Intelligence Operating System
+
+The platform should resemble enterprise software from NVIDIA, Tesla, and Palantir, with a premium, futuristic, glassmorphism interface.
+
+========================================================
+MISSION
+========================================================
+
+Build an AI-powered Smart City Operating System that combines:
+
+• Multi-Agent Artificial Intelligence
+• Physics-Based Traffic Simulation
+• Digital Twin Technology
+• Real-Time Analytics
+• Explainable AI
+• Urban Consensus Protocol (UCP)
+• Enterprise Dashboard
+• Sustainability Analytics
+• Emergency Response Optimization
+
+The system must optimize traffic while satisfying:
+
+SDG 3
+SDG 7
+SDG 8
+SDG 9
+SDG 11
+SDG 12
+SDG 13
+SDG 17
+
+========================================================
+TECH STACK
+========================================================
+
+Frontend
+
+React 18
+Vite
+TailwindCSS
+Framer Motion
+Three.js
+React Three Fiber
+React Flow
+Recharts
+Leaflet or Mapbox
+Lucide Icons
+
+Backend
+
+Python
+
+Choose either
+
+FastAPI
+
+OR
+
+Django REST Framework
+
+Use
+
+Async WebSocket
+
+========================================================
+PROJECT STRUCTURE
+========================================================
+
+backend/
+
+agents/
+
+simulation/
+
+algorithms/
+
+services/
+
+api/
+
+frontend/
+
+components/
+
+pages/
+
+hooks/
+
+utils/
+
+store/
+
+========================================================
+20 MODULAR AI AGENTS
+========================================================
+
+Each agent must exist in its own Python file.
+
+agents/
+
+vision_agent.py
+
+traffic_state_agent.py
+
+sensor_trust_agent.py
+
+weather_agent.py
+
+intersection_controller_agent.py
+
+neighbor_coordination_agent.py
+
+emergency_response_agent.py
+
+public_transport_agent.py
+
+event_management_agent.py
+
+prediction_agent.py
+
+sustainability_agent.py
+
+shadow_city_agent.py
+
+urban_consensus_agent.py
+
+explainable_ai_agent.py
+
+dashboard_agent.py
+
+urbanverse_ai.py
+
+alert_agent.py
+
+route_optimization_agent.py
+
+safety_guard_agent.py
+
+analytics_agent.py
+
+========================================================
+EACH AGENT MUST DISPLAY
+========================================================
+
+Name
+
+Purpose
+
+Input
+
+Algorithm Used
+
+Processing Steps
+
+Decision
+
+Reason
+
+Confidence
+
+Execution Time
+
+Communication Log
+
+Output
+
+Expected Impact
+
+Status
+
+Health
+
+========================================================
+PHYSICS BASED URBANVERSE SIMULATOR
+========================================================
+
+Do NOT use random dashboard values.
+
+Create a deterministic traffic simulator whose telemetry drives every card, chart, prediction, and alert.
+
+Continuous vehicle generation from
+
+North
+
+South
+
+East
+
+West
+
+Vehicle Types
+
+Car
+
+Bike
+
+Bus
+
+Truck
+
+Auto
+
+Ambulance
+
+Fire Truck
+
+Police
+
+VIP Convoy
+
+Pedestrian
+
+Cyclist
+
+Every vehicle should have
+
+ID
+
+Position
+
+Velocity
+
+Acceleration
+
+Direction
+
+Destination
+
+Lane
+
+Signal State
+
+Queue State
+
+Priority
+
+Turning Intention
+
+Fuel Usage
+
+CO₂ Estimate
+
+Waiting Time
+
+Travel Time
+
+Vehicle movement should include
+
+Go Straight
+
+Turn Left
+
+Turn Right
+
+Accelerate
+
+Brake
+
+Queue
+
+Signal Crossing
+
+Exit Network
+
+The simulator should support scenarios
+
+Morning Rush
+
+Evening Rush
+
+Heavy Rain
+
+Accident
+
+Road Block
+
+Festival
+
+School Zone
+
+VIP Movement
+
+Emergency Corridor
+
+Construction Zone
+
+========================================================
+URBAN CONSENSUS PROTOCOL
+========================================================
+
+All AI agents communicate before making decisions.
+
+Workflow
+
+Observe
+
+↓
+
+Analyze
+
+↓
+
+Share State
+
+↓
+
+Negotiate
+
+↓
+
+Consensus
+
+↓
+
+Shadow Simulation
+
+↓
+
+Approve
+
+↓
+
+Execute
+
+↓
+
+Explain
+
+Prevent
+
+Deadlock
+
+Gridlock
+
+Spillback
+
+Starvation
+
+Implement Dynamic Priority Aging so low-priority vehicles cannot wait indefinitely.
+
+========================================================
+ALGORITHMS ENGINE
+========================================================
+
+Create a dedicated Algorithms page.
+
+Explain visually
+
+YOLOv8
+
+OpenCV
+
+Urban Consensus Protocol
+
+Dynamic Priority Aging
+
+Deadlock Detection
+
+Gridlock Prevention
+
+Neighbor Coordination
+
+Traffic Density Estimation
+
+Sensor Trust Score
+
+Queue Optimization
+
+Digital Twin
+
+Dijkstra
+
+A*
+
+Time-Series Prediction
+
+Collision Detection
+
+Every algorithm page should include
+
+Purpose
+
+Mathematical Idea
+
+Workflow
+
+Why Used
+
+Advantages
+
+Limitations
+
+========================================================
+AI AGENT COMMUNICATION PAGE
+========================================================
+
+Build a live animated graph using React Flow.
+
+Example
+
+Vision Agent
+
+↓
+
+Traffic State Agent
+
+↓
+
+Prediction Agent
+
+↓
+
+Urban Consensus Agent
+
+↓
+
+Shadow City Agent
+
+↓
+
+Intersection Controller
+
+↓
+
+Dashboard Agent
+
+Animate data packets between agents.
+
+Clicking an agent should open a side panel displaying
+
+Current Decision
+
+Input
+
+Output
+
+Confidence
+
+Algorithm
+
+Communication History
+
+========================================================
+3D DIGITAL TWIN
+========================================================
+
+Build using Three.js
+
+Include
+
+Roads
+
+Buildings
+
+Signals
+
+Trees
+
+Moving Vehicles
+
+Emergency Vehicles
+
+Traffic Lights
+
+Weather
+
+Rain
+
+Fog
+
+Day Mode
+
+Night Mode
+
+Animated Cameras
+
+Live Labels
+
+========================================================
+LIVE DASHBOARD
+========================================================
+
+Overview Cards
+
+Vehicles
+
+Active Roads
+
+Average Speed
+
+Average Waiting Time
+
+Signal Efficiency
+
+Emergency Vehicles
+
+Congestion %
+
+Queue Length
+
+Road Occupancy
+
+Travel Time
+
+Fuel Saved
+
+CO₂ Reduced
+
+City Health Score
+
+Weather
+
+Air Quality
+
+========================================================
+CHARTS
+========================================================
+
+Vehicle Count
+
+Traffic Density
+
+Queue Length
+
+Signal Utilization
+
+Road Occupancy
+
+Emergency Trend
+
+Congestion Trend
+
+Travel Time
+
+Fuel Consumption
+
+CO₂ Reduction
+
+Prediction Confidence
+
+Agent Performance
+
+Road Performance
+
+Use
+
+Line Charts
+
+Bar Charts
+
+Pie Charts
+
+Area Charts
+
+Gauge Charts
+
+Radar Charts
+
+========================================================
+PREDICTION PAGE
+========================================================
+
+Predict
+
+5 Minutes
+
+10 Minutes
+
+30 Minutes
+
+Display
+
+Expected Queue
+
+Expected Congestion
+
+Expected Delay
+
+Expected CO₂
+
+Expected Fuel Usage
+
+Expected Travel Time
+
+Confidence
+
+========================================================
+LIVE ALERT CENTER
+========================================================
+
+Generate alerts for
+
+Accident
+
+Wrong Way Vehicle
+
+Overspeeding
+
+Camera Failure
+
+Sensor Failure
+
+Heavy Rain
+
+Flood
+
+Fire Truck
+
+Ambulance
+
+VIP Convoy
+
+Road Closure
+
+High Pollution
+
+Show
+
+Severity
+
+Location
+
+Timestamp
+
+Recommended Action
+
+Affected Roads
+
+========================================================
+VOICE & AI ASSISTANT
+========================================================
+
+Floating AI Assistant.
+
+Support questions such as
+
+What is the queue length at Junction 3?
+
+Which road is most congested?
+
+Why did the signal change?
+
+Activate Green Corridor.
+
+Explain Urban Consensus Protocol.
+
+========================================================
+REPORTS
+========================================================
+
+Generate downloadable
+
+PDF
+
+JSON
+
+CSV
+
+Traffic Report
+
+Environmental Report
+
+Agent Report
+
+Signal Report
+
+Emergency Report
+
+Prediction Report
+
+========================================================
+SIDEBAR
+========================================================
+
+Live Dashboard
+
+Live Simulation
+
+3D Digital Twin
+
+AI Agents
+
+Prediction
+
+Analytics
+
+Algorithms
+
+Traffic History
+
+Alerts
+
+Reports
+
+Settings
+
+Voice Assistant
+
+========================================================
+UI REQUIREMENTS
+========================================================
+
+Glassmorphism
+
+Dark Theme
+
+Gradient Cards
+
+Animated Transitions
+
+Responsive
+
+Floating Widgets
+
+Interactive Maps
+
+Professional Typography
+
+Smooth Micro Animations
+
+========================================================
+VERIFICATION
+========================================================
+
+Create automated tests.
+
+Verify
+
+All 20 agents initialize correctly.
+
+UrbanVerse simulator produces consistent telemetry.
+
+WebSocket streams update live.
+
+Predictions use simulator state.
+
+Charts update from simulation.
+
+Alerts trigger from simulation events.
+
+3D Digital Twin updates correctly.
+
+========================================================
+FINAL REQUIREMENT
+========================================================
+
+The platform should feel like enterprise software, not a student project.
+
+Every graph, dashboard card, AI agent decision, prediction, report, and alert must derive from the simulation state and the interactions of the 20 AI agents.
+
+Provide clean architecture, modular code, detailed comments, and production-ready folder organization.
