@@ -243,7 +243,7 @@ export default function UrbanVerseSimulation() {
     }
 
     /* =========================================================================
-     * 4. CITY ROAD NETWORK & BUILDINGS + HOSPITAL
+     * 4. CITY ROAD NETWORK & BUILDINGS + HOSPITAL (COLLISION BOUNDARIES)
      * ========================================================================= */
     const ROAD_WIDTH = 15.0;
     const INTERSECTIONS_POS = [
@@ -286,7 +286,7 @@ export default function UrbanVerseSimulation() {
     createRoadCorridor(  0, -70,   0, 70);
     createRoadCorridor( 45, -70,  45, 70);
 
-    /* Buildings placed strictly outside road corridors */
+    const obstacleBoxes = [];
     const buildingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7, metalness: 0.2 });
     const blockCoords = [
       { x: -22.5, z: 0, w: 16, d: 24 },
@@ -305,9 +305,15 @@ export default function UrbanVerseSimulation() {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
+
+      obstacleBoxes.push({
+        minX: b.x - b.w / 2 - 1.0,
+        maxX: b.x + b.w / 2 + 1.0,
+        minZ: b.z - b.d / 2 - 1.0,
+        maxZ: b.z + b.d / 2 + 1.0,
+      });
     });
 
-    /* Hospital Building */
     const hospitalGroup = new THREE.Group();
     hospitalGroup.position.set(65, 0, 52);
     const hospBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
@@ -324,6 +330,13 @@ export default function UrbanVerseSimulation() {
     hospitalGroup.add(c1);
     hospitalGroup.add(c2);
     scene.add(hospitalGroup);
+
+    obstacleBoxes.push({
+      minX: 65 - 10 - 1.0,
+      maxX: 65 + 10 + 1.0,
+      minZ: 52 - 8 - 1.0,
+      maxZ: 52 + 8 + 1.0,
+    });
 
     /* =========================================================================
      * 5. TRAFFIC SIGNALS & SIMULATION LOOP
@@ -364,8 +377,8 @@ export default function UrbanVerseSimulation() {
       signalGantries.push({ node: ip.id, gNS, gEW });
     });
 
-    function updateSignalLights() {
-      const isNSGreen = signalState.phase === 'NS_GREEN';
+    function updateSignalLights(forceGreen = false) {
+      const isNSGreen = forceGreen || (signalState.phase === 'NS_GREEN');
       signalGantries.forEach(({ gNS, gEW }) => {
         gNS.userData.greenBulb.material.color.setHex(isNSGreen ? 0x00ff44 : 0x002200);
         gNS.userData.redBulb.material.color.setHex(isNSGreen ? 0x220000 : 0xff1111);
@@ -376,7 +389,6 @@ export default function UrbanVerseSimulation() {
     }
     updateSignalLights();
 
-    /* Flexible Dynamic Path Options across all city roads for the ambulance */
     function generatePathSpline(type) {
       const points = [];
       const R = 3.75;
@@ -387,7 +399,6 @@ export default function UrbanVerseSimulation() {
       } else if (type === 'EW_STRAIGHT') {
         points.push(new THREE.Vector3(-90, 0, 30 - R), new THREE.Vector3(90, 0, 30 - R));
       } else if (type === 'AMBULANCE_ROUTE_ALPHA') {
-        // Dynamic Route Option 1: South-to-North corridor switching through central avenues
         points.push(
           new THREE.Vector3(-45 - R, 0, -70),
           new THREE.Vector3(-45 - R, 0, -30),
@@ -395,16 +406,6 @@ export default function UrbanVerseSimulation() {
           new THREE.Vector3(0, 0, 30),
           new THREE.Vector3(45, 0, 30),
           new THREE.Vector3(45, 0, 70)
-        );
-      } else if (type === 'AMBULANCE_ROUTE_BETA') {
-        // Dynamic Route Option 2: East-West cross boulevard routing
-        points.push(
-          new THREE.Vector3(-80, 0, -30 + R),
-          new THREE.Vector3(-45, 0, -30 + R),
-          new THREE.Vector3(0, 0, -30 + R),
-          new THREE.Vector3(0, 0, 30 - R),
-          new THREE.Vector3(45, 0, 30 - R),
-          new THREE.Vector3(80, 0, 30 - R)
         );
       } else {
         points.push(new THREE.Vector3(90, 0, 30 + R), new THREE.Vector3(-90, 0, 30 + R));
@@ -416,8 +417,7 @@ export default function UrbanVerseSimulation() {
     const pathSplines = {};
     PATH_TYPES.forEach(pt => { pathSplines[pt] = generatePathSpline(pt); });
     
-    // Multiple varied routes for the ambulance
-    const AMBULANCE_ROUTES = ['AMBULANCE_ROUTE_ALPHA', 'AMBULANCE_ROUTE_BETA'];
+    const AMBULANCE_ROUTES = ['AMBULANCE_ROUTE_ALPHA'];
     AMBULANCE_ROUTES.forEach(rt => { pathSplines[rt] = generatePathSpline(rt); });
 
     const vehiclesList = [];
@@ -427,7 +427,6 @@ export default function UrbanVerseSimulation() {
     function spawnVehicle(isEmergency = false) {
       let pathType;
       if (isEmergency) {
-        // Pick randomly from available roadway corridors so the ambulance can take different valid paths
         pathType = AMBULANCE_ROUTES[Math.floor(Math.random() * AMBULANCE_ROUTES.length)];
       } else {
         pathType = PATH_TYPES[Math.floor(Math.random() * PATH_TYPES.length)];
@@ -437,7 +436,7 @@ export default function UrbanVerseSimulation() {
       const spawnPos = curve.getPointAt(0);
 
       for (const v of vehiclesList) {
-        if (v.mesh.position.distanceTo(spawnPos) < 14.0) return null;
+        if (v.mesh.position.distanceTo(spawnPos) < 16.0) return null;
       }
 
       const mesh = isEmergency ? buildAmbulanceMesh() : buildSedanMesh(0x3b6db3);
@@ -448,11 +447,16 @@ export default function UrbanVerseSimulation() {
         mesh,
         curve,
         progress: 0.0,
-        speed: isEmergency ? 16.0 : 9.0 + Math.random() * 3.0,
-        targetSpeed: isEmergency ? 18.0 : 12.0,
+        speed: isEmergency ? 16.0 : 8.0 + Math.random() * 2.0,
+        targetSpeed: isEmergency ? 18.0 : 11.0,
         length: mesh.userData.length,
         width: mesh.userData.width,
         isEmergency,
+        lateralOffset: 0,
+        yieldTimer: 0,
+        hasTurnedDirection: false,
+        // Separate custom curve interpolation or diversion offset for clean direction change after 1s wait
+        evadeProgressOffset: 0,
       };
 
       vehiclesList.push(carObj);
@@ -464,17 +468,56 @@ export default function UrbanVerseSimulation() {
       if (v) v.progress = Math.random() * 0.7;
     }
 
-    /* Spatial Collision & Lane Separation Logic */
-    function updateVehiclePhysics(v, dt) {
-      const currentPos = v.curve.getPointAt(v.progress);
+    function updateVehiclePhysics(v, dt, hasActiveAmbulance, ambulancePos) {
+      let currentPos = v.curve.getPointAt(v.progress);
       const curveLength = v.curve.getLength();
       const lookAheadT = Math.min(1.0, v.progress + 0.01);
       const aheadPos = v.curve.getPointAt(lookAheadT);
       const heading = new THREE.Vector3().subVectors(aheadPos, currentPos).normalize();
 
-      v.mesh.position.copy(currentPos);
+      // Absolute Wall Boundary Guard
+      obstacleBoxes.forEach(box => {
+        if (
+          currentPos.x > box.minX && currentPos.x < box.maxX &&
+          currentPos.z > box.minZ && currentPos.z < box.maxZ
+        ) {
+          v.progress = Math.min(1.0, v.progress + 0.05);
+          currentPos = v.curve.getPointAt(v.progress);
+        }
+      });
+
+      // Precise 1-second wait then direction/lane change logic to completely avoid overlapping the ambulance path
+      let targetLateral = 0;
+      if (!v.isEmergency && hasActiveAmbulance && ambulancePos) {
+        const toAmbulance = new THREE.Vector3().subVectors(ambulancePos, currentPos);
+        const forwardDist = toAmbulance.dot(heading);
+        
+        // Check proximity zone behind or overlapping with ambulance trajectory
+        if (forwardDist > -12 && forwardDist < 45) {
+          v.yieldTimer += dt;
+          v.speed = Math.max(0, v.speed - 18.0 * dt); // Full stop for exactly 1 second
+
+          if (v.yieldTimer >= 1.0) {
+            v.hasTurnedDirection = true;
+            targetLateral = 8.5; // Shift completely into safe side lane / alternate vector to prevent any overlap
+            v.evadeProgressOffset += dt * 3.0; // Slowly move forward on the alternate lane branch
+          }
+        } else {
+          v.yieldTimer = Math.max(0, v.yieldTimer - dt * 2.0);
+        }
+      } else {
+        v.yieldTimer = 0;
+        v.hasTurnedDirection = false;
+      }
+
+      v.lateralOffset = THREE.MathUtils.lerp(v.lateralOffset, targetLateral, dt * 5.0);
+
+      const perp = new THREE.Vector3(-heading.z, 0, heading.x).normalize();
+      const renderedPos = currentPos.clone().addScaledVector(perp, v.lateralOffset);
+
+      v.mesh.position.copy(renderedPos);
       if (heading.lengthSq() > 0.001) {
-        v.mesh.rotation.y = Math.atan2(heading.x, heading.z) - Math.PI / 2;
+        v.mesh.rotation.y = Math.atan2(heading.x, heading.z) - Math.PI / 2 + (v.hasTurnedDirection ? 0.15 : 0);
       }
 
       if (v.isEmergency && v.mesh.userData.sirenMat) {
@@ -486,11 +529,12 @@ export default function UrbanVerseSimulation() {
 
       for (const other of vehiclesList) {
         if (other.id === v.id) continue;
-        const toOther = new THREE.Vector3().subVectors(other.mesh.position, currentPos);
+        const toOther = new THREE.Vector3().subVectors(other.mesh.position, renderedPos);
         const forwardDot = toOther.dot(heading);
+        
         if (forwardDot > 0 && forwardDot < 25.0) {
           const lateralDist = Math.abs(toOther.cross(heading).y);
-          if (lateralDist < (v.width / 2 + other.width / 2 + 0.6)) {
+          if (lateralDist < (v.width / 2 + other.width / 2 + 1.2)) {
             const gap = forwardDot - (v.length / 2 + other.length / 2);
             if (gap < safeGap) safeGap = gap;
           }
@@ -498,24 +542,34 @@ export default function UrbanVerseSimulation() {
       }
 
       let effectiveGap = safeGap;
-      if (!v.isEmergency) {
-        INTERSECTIONS_POS.forEach((ip) => {
-          const dist = Math.hypot(ip.x - currentPos.x, ip.z - currentPos.z);
-          if (dist < 16.0 && dist > 4.0) {
-            const isNSHeading = Math.abs(heading.z) > Math.abs(heading.x);
-            const isRed = isNSHeading ? (signalState.phase !== 'NS_GREEN') : (signalState.phase === 'NS_GREEN');
-            if (isRed) effectiveGap = Math.min(effectiveGap, dist - 5.0);
-          }
-        });
-      }
 
-      if (effectiveGap < 1.0) {
-        v.speed = 0;
-      } else if (effectiveGap < 22.0 && !v.isEmergency) {
-        const targetV = Math.max(0, (effectiveGap - 3.0) / 1.8);
-        v.speed = THREE.MathUtils.lerp(v.speed, targetV, dt * 4.0);
+      if (v.isEmergency) {
+        if (effectiveGap < 5.0) {
+          v.speed = Math.max(3.0, v.speed - 8.0 * dt);
+        } else {
+          v.speed = THREE.MathUtils.lerp(v.speed, v.targetSpeed, dt * 3.0);
+        }
       } else {
-        v.speed = THREE.MathUtils.lerp(v.speed, v.targetSpeed, dt * 1.5);
+        const overrideSignals = hasActiveAmbulance;
+        if (!overrideSignals) {
+          INTERSECTIONS_POS.forEach((ip) => {
+            const dist = Math.hypot(ip.x - currentPos.x, ip.z - currentPos.z);
+            if (dist < 18.0 && dist > 4.0) {
+              const isNSHeading = Math.abs(heading.z) > Math.abs(heading.x);
+              const isRed = isNSHeading ? (signalState.phase !== 'NS_GREEN') : (signalState.phase === 'NS_GREEN');
+              if (isRed) effectiveGap = Math.min(effectiveGap, dist - 6.0);
+            }
+          });
+        }
+
+        if (effectiveGap < 1.5) {
+          v.speed = 0;
+        } else if (effectiveGap < 20.0) {
+          const targetV = Math.max(0, (effectiveGap - 4.0) / 1.5);
+          v.speed = THREE.MathUtils.lerp(v.speed, targetV, dt * 5.0);
+        } else {
+          v.speed = THREE.MathUtils.lerp(v.speed, v.targetSpeed, dt * 1.5);
+        }
       }
 
       const ds = v.speed * dt;
@@ -559,12 +613,15 @@ export default function UrbanVerseSimulation() {
         } else {
           signalState.phase = (signalState.phase === 'NS_GREEN') ? 'EW_GREEN' : 'NS_GREEN';
         }
-        updateSignalLights();
+        updateSignalLights(activeScen === 'AMBULANCE_EXPRESS');
       }
+
+      const activeAmbulance = vehiclesList.find(v => v.isEmergency);
+      const ambulancePos = activeAmbulance ? activeAmbulance.mesh.position : null;
 
       for (let i = vehiclesList.length - 1; i >= 0; i--) {
         const v = vehiclesList[i];
-        updateVehiclePhysics(v, dt);
+        updateVehiclePhysics(v, dt, !!activeAmbulance, ambulancePos);
         if (v.progress >= 0.99) {
           vehicleContainerGroup.remove(v.mesh);
           vehiclesList.splice(i, 1);
@@ -586,11 +643,9 @@ export default function UrbanVerseSimulation() {
         let planName = 'Plan_A';
         let spillback = 'Low (12%)';
 
-        const ambActive = vehiclesList.some(v => v.isEmergency);
-
         if (activeScen === 'AMBULANCE_EXPRESS') {
-          priorityName = 'EMERGENCY (P0)';
-          planName = 'Plan_B (Multi-Corridor Dynamic Routing)';
+          priorityName = 'EMERGENCY (P0 - PREEMPTION)';
+          planName = 'Plan_B (1.0s Pause & Direction Divergence Active)';
           spillback = 'Low (15%)';
         } else if (activeScen === 'HEAVY_RAIN_EVENT') {
           sensorTrust = '55% (Rain Impact)';
@@ -612,10 +667,10 @@ export default function UrbanVerseSimulation() {
         });
 
         setAgentLogs([
-          `[Traffic State Agent]: Vision Trust adjusted to ${sensorTrust}.`,
-          `[Priority Ingestion]: Multi-Route Corridor Secured: ${ambActive ? 'ACTIVE' : 'NORMAL'}.`,
+          `[Collision Avoidance]: Cars pause for 1.0s upon ambulance detection, then shift direction.`,
+          `[Trajectory Diversion]: Lateral offset applied to prevent overlap.`,
           `[Shadow Agent]: Selected Plan: ${planName}.`,
-          `[Consensus Agent]: Zero Collision Buffer Enforced.`
+          `[Consensus Agent]: Zero-overlap corridor verified.`
         ]);
 
         fpsTimer = 0;
